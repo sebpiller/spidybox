@@ -1,14 +1,5 @@
----
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: "{{ .Release.Namespace }}"
-  name: radarr-svc
-spec:
-  type: NodePort
-  ports:
-    - port: 7878
-      targetPort: 7878
-      nodePort: 30078
-  selector:
-    app: radarr
+{{- if .Values.enabled }}
+
+{{ include "default-nodeport" . }}
+
+{{- end }}

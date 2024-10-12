@@ -1,40 +1,5 @@
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: "{{ .Release.Namespace }}"
-  name: lidarr-dep
-  labels:
-    app: lidarr
-spec:
-  replicas: {{ .Values.replicas }}
-  selector:
-    matchLabels:
-      app: lidarr
-  template:
-    metadata:
-      labels:
-        app: lidarr
-    spec:
-      containers:
-        - name: lidarr-container
-          image: linuxserver/lidarr:latest
-          ports:
-            - containerPort: 8989
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-          volumeMounts:
-            - name: lidarr-config
-              mountPath: /config
-            - name: lidarr-downloads
-              mountPath: /downloads
-      volumes:
-        - name: lidarr-config
-          persistentVolumeClaim:
-            claimName: lidarr-config-pvc
-        - name: lidarr-downloads
-          persistentVolumeClaim:
-            claimName: lidarr-downloads-pvc
+{{- if .Values.enabled }}
+
+{{ include "default-dep" . }}
+
+{{- end }}

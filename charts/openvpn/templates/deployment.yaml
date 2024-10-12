@@ -1,37 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: "{{ .Release.Namespace }}"
-  name: openvpn
-  labels:
-    app: openvpn
-spec:
-  replicas: {{ .Values.replicas }}
-  selector:
-    matchLabels:
-      app: openvpn
-  template:
-    metadata:
-      labels:
-        app: openvpn
-    spec:
-      containers:
-        - name: openvpn
-          image: linuxserver/openvpn:latest
-          ports:
-            - containerPort: 443
-            - containerPort: 943
-            - containerPort: 1194
-              protocol: UDP
-          env:
-            - name: PUID
-              value: "1000"  # Remplacez par l'ID utilisateur approprié
-            - name: PGID
-              value: "1000"  # Remplacez par l'ID de groupe approprié
-          volumeMounts:
-            - name: openvpn-config
-              mountPath: /config
-      volumes:
-        - name: openvpn-config
-          persistentVolumeClaim:
-            claimName: openvpn-config-pvc
+{{- if .Values.enabled }}
+
+{{ include "default-dep" . }}
+
+{{- end }}

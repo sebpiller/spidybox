@@ -1,40 +1,5 @@
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: "{{ .Release.Namespace }}"
-  name: radarr-dep
-  labels:
-    app: radarr
-spec:
-  replicas: {{ .Values.replicas }}
-  selector:
-    matchLabels:
-      app: radarr
-  template:
-    metadata:
-      labels:
-        app: radarr
-    spec:
-      containers:
-        - name: radarr-cont
-          image: linuxserver/radarr:latest
-          ports:
-            - containerPort: 7878
-          env:
-            - name: PUID
-              value: "1000"  # Remplacez par l'ID utilisateur approprié
-            - name: PGID
-              value: "1000"  # Remplacez par l'ID de groupe approprié
-          volumeMounts:
-            - name: radarr-config
-              mountPath: /config
-            - name: radarr-downloads
-              mountPath: /downloads
-      volumes:
-        - name: radarr-config
-          persistentVolumeClaim:
-            claimName: radarr-config-pvc
-        - name: radarr-downloads
-          persistentVolumeClaim:
-            claimName: radarr-downloads-pvc
+{{- if .Values.enabled }}
+
+{{ include "default-dep" . }}
+
+{{- end }}

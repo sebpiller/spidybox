@@ -1,61 +1,100 @@
 openvpn:
-  name: vpn
-  enabled: false
-  replicas: 0
+  name: "vpn"
+  enabled: true
+  image: openvpn/openvpn-as
+  version: latest
+  replicas: 1
+  ports:
+    - name: "https"
+      port: 443
+      node-port: 30443
+    - name: "xxx"
+      port: 943
+      node-port: 30943
+    - name: "pouet"
+      port: 1194
+      node-port: 31194
+      protocol: "UDP"
   volumes:
     - name: config
-      capacity: 1Go
+      capacity: 1Gi
 
 transmission:
-  name: trans
+  name: "transmission"
   enabled: true
   image: linuxserver/transmission
   version: latest
   replicas: 1
   ports:
-    - 9091
+    - name: "http"
+      port: 9091
+      node-port: 30091
   volumes:
     - name: config
-      capacity: 1Go
+      capacity: 1Gi
     - name: downloads
-      capacity: 100Go
+      capacity: 1Gi
 
 prowlarr:
+  name: "prowlarr"
   enabled: true
+  image: linuxserver/prowlarr
+  version: latest
   replicas: 1
-  config:
-    name: prowlarr-config
-    capacity: 1Go
-  downloads:
-    name: prowlarr-downloads
-    capacity: 5Go
+  ports:
+    - name: "http"
+      port: 9696
+      node-port: 30096
+  volumes:
+    - name: config
+      capacity: 1Gi
+    - name: downloads
+      capacity: 1Gi
 
 sonarr:
-  enabled: false
-  replicas: 0
-  config:
-    name: sonarr-config
-    capacity: 5Go
-  downloads:
-    name: sonarr-downloads
-    capacity: 100Go
+  name: "sonarr"
+  enabled: true
+  image: linuxserver/sonarr
+  version: latest
+  replicas: 1
+  ports:
+    - name: "http"
+      port: 8989
+      node-port: 30089
+  volumes:
+    - name: config
+      capacity: 1Gi
+    - name: downloads
+      capacity: 1Gi
 
 lidarr:
-  enabled: false
-  replicas: 0
-  config:
-    name: lidarr-config
-    capacity: 5Go
-  downloads:
-    name: lidarr-downloads
-    capacity: 100Go
+  name: "lidarr"
+  enabled: true
+  image: linuxserver/lidarr
+  version: latest
+  replicas: 1
+  ports:
+    - name: "http"
+      port: 8686
+      node-port: 30086
+  volumes:
+    - name: config
+      capacity: 1Gi
+    - name: downloads
+      capacity: 1Gi
 
 radarr:
+  name: "radarr"
   enabled: true
+  image: linuxserver/radarr
+  version: latest
   replicas: 1
-  config:
-    name: radarr-config
-    capacity: 5Go
-  downloads:
-    name: radarr-downloads
-    capacity: 100Go
+  ports:
+    - name: "http"
+      port: 7878
+      node-port: 30078
+  volumes:
+    - name: config
+      capacity: 1Gi
+    - name: downloads
+      capacity: 1Gi
