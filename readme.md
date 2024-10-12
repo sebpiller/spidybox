@@ -1,9 +1,12 @@
-# Destroy the namespace if any and reinstall the app
+# Reinstall current default config
 
 ```shell
-kubectl delete namespace spidybox
-kubectl create namespace spidybox
-helm upgrade --install spidybox . --namespace=spidybox 
+kubectl delete namespace spidybox 
+```
+
+
+```shell
+helm upgrade --install spidybox . --namespace=spidybox --create-namespace
 ```
 
 # Uninstall 
@@ -14,4 +17,13 @@ helm uninstall spidybox --namespace=spidybox
 # Test installation without actually doing it
 ```shell
 helm upgrade spidybox . --namespace=spidybox --dry-run --debug
+```
+
+
+```shell
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+```
+```shell
+helm upgrade --install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
 ```

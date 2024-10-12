@@ -1,0 +1,41 @@
+{{ if .Values.global.nfsVolume.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: "{{ $.Release.Namespace }}"
+  name: "{{ $.Values.global.nfsVolume.name }}-pv"
+  labels:
+    location: "{{ $.Values.global.nfsVolume.name }}-medias"
+    type: remote
+spec:
+  capacity:
+    storage: {{ $.Values.global.nfsVolume.capacity }}
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    path: "{{ $.Values.global.nfsVolume.path }}"
+    server: "{{ $.Values.global.nfsVolume.server }}"
+    readOnly: {{ $.Values.global.nfsVolume.readOnly }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: "{{ $.Release.Namespace }}"
+  name: "{{ $.Values.global.nfsVolume.name }}-pvc"
+  labels:
+    app.kubernetes.io/name: "{{ $.Values.global.nfsVolume.name }}-pvc"
+spec:
+  storageClassName: "local-path"
+  selector:
+    matchLabels:
+      location: "{{ $.Values.global.nfsVolume.name }}-medias"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ $.Values.global.nfsVolume.capacity }}
+
+{{- end }}

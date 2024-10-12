@@ -1,8 +1,17 @@
 global:
   host: "spidybox.home"
   localStorageRootPath: "/data/pouetpouet"
+  defaultReplica: &defaultReplica 1
   defaultMaxMemory: &defaultMaxMemory "1024Mi"
   defaultMaxCpu: &defaultMaxCpu "500m"
+
+  nfsVolume:
+    name: "nfs"
+    enabled: true
+    path: "/volume1/medias"
+    server: "192.168.1.2"
+    capacity: 1Gi
+    readOnly: false
 
 # Open VPN client to use
 openvpn:
@@ -11,15 +20,15 @@ openvpn:
   debug: true
   image: openvpn/openvpn-as
   version: latest
+  replicas: *defaultReplica
   netadmin: true
-  init:
-    image: "busybox"
-    version: "latest"
-    commands:
-      - "sh"
-      - "-c"
-      - "echo The app is running! && sleep 10 "
-  replicas: 1
+#  init:
+#    image: "busybox"
+#    version: "latest"
+#    commands:
+#      - "sh"
+#      - "-c"
+#      - "echo The app is running! && sleep 10 "
   probes:
     commands:
       - "/bin/bash"
@@ -70,6 +79,10 @@ transmission:
       capacity: 1Gi
     - name: downloads
       capacity: 1Gi
+#    - name: nas-medias-nfs-volume
+#      capacity: 1Gi
+#      claimName: nfs-pvc
+#      accessMode: ReadWriteMany
 
 prowlarr:
   name: "prowlarr"
@@ -112,6 +125,12 @@ sonarr:
       capacity: 1Gi
     - name: downloads
       capacity: 1Gi
+#    - name: tvshows
+#      capacity: 1Gi
+#      claimName: nfs-pvc
+#      accessMode: ReadWriteMany
+#      subPath: "/TV Shows"
+
 
 lidarr:
   name: "lidarr"

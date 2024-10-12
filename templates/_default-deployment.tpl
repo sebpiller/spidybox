@@ -34,7 +34,7 @@ spec:
       containers:
         {{ if $.Values.debug }}
         - name: "{{ .Values.name }}-debug"
-          image: "debian:latest"
+          image: "ubuntu:latest"
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -134,7 +134,11 @@ spec:
         {{- range $volume := .Values.volumes }}
         - name: "{{ $volume.name }}"
           persistentVolumeClaim:
+            {{ if $volume.claimName }}
+            claimName: "{{ $volume.claimName }}"
+            {{ else }}
             claimName: "{{ $.Values.name }}-{{ $volume.name }}-pvc"
+            {{ end }}
         {{- end }}
 
 {{- end }}

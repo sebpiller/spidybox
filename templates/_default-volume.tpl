@@ -1,5 +1,7 @@
 {{- define "default-volume-local" }}
 
+{{ if $.Values.claimName }}
+{{ else }}
 {{- range $volume := .Values.volumes }}
 ---
 apiVersion: v1
@@ -17,12 +19,16 @@ spec:
   capacity:
     storage: "{{ $volume.capacity }}"
   accessModes:
-    - ReadWriteOnce
+    - {{ $volume.accessMode | default "ReadWriteOnce" }}
   hostPath:
     path: "{{ $.Values.global.localStorageRootPath | default "/data" }}/{{ $.Release.Namespace }}/{{ $.Values.name }}/{{ $volume.name }}"
 {{- end }}
+{{- end }}
 
 
+
+{{ if $.Values.claimName }}
+{{ else }}
 {{- range $volume := .Values.volumes }}
 ---
 apiVersion: v1
@@ -34,10 +40,11 @@ spec:
   volumeMode: Filesystem
   volumeName: "{{ $.Values.name }}-{{ $volume.name }}-pv"
   accessModes:
-    - ReadWriteOnce
+    - {{ $volume.accessMode | default "ReadWriteOnce" }}
   resources:
     requests:
       storage: "{{ $volume.capacity }}"
+{{- end }}
 {{- end }}
 
 
