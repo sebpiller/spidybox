@@ -1,5 +1,5 @@
 {{- if .Values.enabled }}
 
-{{ include "default-dep" . }}
+{{ include "default-deployment" . }}
 
 {{- end }}

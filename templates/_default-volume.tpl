@@ -9,8 +9,13 @@ metadata:
   name: "{{ $.Values.name }}-{{ $volume.name }}-pv"
 spec:
   storageClassName: "local-path"
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  claimRef:
+    namespace: "{{ $.Release.Namespace }}"
+    name: "{{ $.Values.name }}-{{ $volume.name }}-pvc"
   capacity:
-    storage: {{ $volume.capacity }}
+    storage: "{{ $volume.capacity }}"
   accessModes:
     - ReadWriteOnce
   hostPath:
@@ -26,12 +31,13 @@ metadata:
   namespace: "{{ $.Release.Namespace }}"
   name: "{{ $.Values.name }}-{{ $volume.name }}-pvc"
 spec:
+  volumeMode: Filesystem
+  volumeName: "{{ $.Values.name }}-{{ $volume.name }}-pv"
   accessModes:
     - ReadWriteOnce
-  volumeName: "{{ $.Values.name }}-{{ $volume.name }}-pv"
   resources:
     requests:
-      storage: {{ $volume.capacity }}
+      storage: "{{ $volume.capacity }}"
 {{- end }}
 
 

@@ -1,22 +1,53 @@
+global:
+  host: "spidybox.home"
+  localStorageRootPath: "/data/pouetpouet"
+  defaultMaxMemory: &defaultMaxMemory "1024Mi"
+  defaultMaxCpu: &defaultMaxCpu "500m"
+
+# Open VPN client to use
 openvpn:
-  name: "vpn"
+  name: "openvpn"
   enabled: true
+  debug: true
   image: openvpn/openvpn-as
   version: latest
+  netadmin: true
+  init:
+    image: "busybox"
+    version: "latest"
+    commands:
+      - "sh"
+      - "-c"
+      - "echo The app is running! && sleep 10 "
   replicas: 1
+  probes:
+    commands:
+      - "/bin/bash"
+      - "-c"
+      - "ps -ef | grep openvpn*"
+#      - "nc"
+#      - "-u"
+#      - "-z"
+#      - "127.0.0.1"
+#      - "1194"
+  resources:
+    limits:
+      memory: *defaultMaxMemory
+      cpu: *defaultMaxCpu
   ports:
     - name: "https"
       port: 443
-      node-port: 30443
-    - name: "xxx"
+      nodePort: 30443
+    - name: "admin"
       port: 943
-      node-port: 30943
-    - name: "pouet"
+      nodePort: 30943
+      ingressPath: "/vpn"
+    - name: "vpn"
       port: 1194
-      node-port: 31194
+      nodePort: 31194
       protocol: "UDP"
   volumes:
-    - name: config
+    - name: "openvpn"
       capacity: 1Gi
 
 transmission:
@@ -25,10 +56,15 @@ transmission:
   image: linuxserver/transmission
   version: latest
   replicas: 1
+  resources:
+    limits:
+      memory: *defaultMaxMemory
+      cpu: *defaultMaxCpu
   ports:
     - name: "http"
       port: 9091
-      node-port: 30091
+      nodePort: 30091
+      ingressPath: "/transmission"
   volumes:
     - name: config
       capacity: 1Gi
@@ -41,10 +77,15 @@ prowlarr:
   image: linuxserver/prowlarr
   version: latest
   replicas: 1
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: 2000m
   ports:
     - name: "http"
       port: 9696
-      node-port: 30096
+      nodePort: 30096
+      ingressPath: "/prowlarr"
   volumes:
     - name: config
       capacity: 1Gi
@@ -57,10 +98,15 @@ sonarr:
   image: linuxserver/sonarr
   version: latest
   replicas: 1
+  resources:
+    limits:
+      memory: *defaultMaxMemory
+      cpu: *defaultMaxCpu
   ports:
     - name: "http"
       port: 8989
-      node-port: 30089
+      nodePort: 30089
+      ingressPath: "/sonarr"
   volumes:
     - name: config
       capacity: 1Gi
@@ -73,10 +119,15 @@ lidarr:
   image: linuxserver/lidarr
   version: latest
   replicas: 1
+  resources:
+    limits:
+      memory: *defaultMaxMemory
+      cpu: *defaultMaxCpu
   ports:
     - name: "http"
       port: 8686
-      node-port: 30086
+      nodePort: 30086
+      ingressPath: "/lidarr"
   volumes:
     - name: config
       capacity: 1Gi
@@ -89,10 +140,15 @@ radarr:
   image: linuxserver/radarr
   version: latest
   replicas: 1
+  resources:
+    limits:
+      memory: *defaultMaxMemory
+      cpu: *defaultMaxCpu
   ports:
     - name: "http"
       port: 7878
-      node-port: 30078
+      nodePort: 30078
+      ingressPath: "/radarr"
   volumes:
     - name: config
       capacity: 1Gi
