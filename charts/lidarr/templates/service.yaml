@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: "{{ .Release.Namespace }}"
+  name: lidarr-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 8686
+      targetPort: 8686
+      nodePort: 30086
+  selector:
+    app: lidarr

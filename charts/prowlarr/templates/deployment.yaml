@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: "{{ .Release.Namespace }}"
+  name: prowlarr-dep
+  labels:
+    app: prowlarr
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: prowlarr
+  template:
+    metadata:
+      labels:
+        app: prowlarr
+    spec:
+      containers:
+        - name: prowlarr
+          image: linuxserver/prowlarr:latest
+          ports:
+            - containerPort: 9696
+          env:
+            - name: PUID
+              value: "1000"  # Remplacez par l'ID utilisateur approprié
+            - name: PGID
+              value: "1000"  # Remplacez par l'ID de groupe approprié
+          volumeMounts:
+            - name: prowlarr-config
+              mountPath: /config
+            - name: prowlarr-downloads
+              mountPath: /downloads
+      volumes:
+        - name: prowlarr-config
+          persistentVolumeClaim:
+            claimName: prowlarr-config-pvc
+        - name: prowlarr-downloads
+          persistentVolumeClaim:
+            claimName: prowlarr-downloads-pvc

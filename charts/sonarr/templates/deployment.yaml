@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: "{{ .Release.Namespace }}"
+  name: sonarr
+  labels:
+    app: sonarr
+spec:
+  replicas: {{ .Values.sonarr.replicas }}
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      containers:
+        - name: sonarr
+          image: linuxserver/sonarr:latest
+          ports:
+            - containerPort: 8989
+          env:
+            - name: PUID
+              value: "1000"  # Remplacez par l'ID utilisateur approprié
+            - name: PGID
+              value: "1000"  # Remplacez par l'ID de groupe approprié
+          volumeMounts:
+            - name: sonarr-config
+              mountPath: /config
+            - name: sonarr-downloads
+              mountPath: /downloads
+      volumes:
+        - name: sonarr-config
+          persistentVolumeClaim:
+            claimName: sonarr-config-pvc
+        - name: sonarr-downloads
+          persistentVolumeClaim:
+            claimName: sonarr-downloads-pvc

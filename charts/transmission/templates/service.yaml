@@ -1,0 +1,17 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: "{{ .Release.Namespace }}"
+  name: "{{ .Values.name }}-svc"
+spec:
+  type: NodePort
+  ports:
+    {{- range $port := .Values.ports }}
+    - port: {{ $port }}
+      targetPort: {{ $port }}
+      nodePort: 3{{ $port }}
+    {{- end }}
+  selector:
+    app: {{ .Values.name }}
+  {{- end }}

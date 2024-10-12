@@ -1,0 +1,61 @@
+openvpn:
+  name: vpn
+  enabled: false
+  replicas: 0
+  volumes:
+    - name: config
+      capacity: 1Go
+
+transmission:
+  name: trans
+  enabled: true
+  image: linuxserver/transmission
+  version: latest
+  replicas: 1
+  ports:
+    - 9091
+  volumes:
+    - name: config
+      capacity: 1Go
+    - name: downloads
+      capacity: 100Go
+
+prowlarr:
+  enabled: true
+  replicas: 1
+  config:
+    name: prowlarr-config
+    capacity: 1Go
+  downloads:
+    name: prowlarr-downloads
+    capacity: 5Go
+
+sonarr:
+  enabled: false
+  replicas: 0
+  config:
+    name: sonarr-config
+    capacity: 5Go
+  downloads:
+    name: sonarr-downloads
+    capacity: 100Go
+
+lidarr:
+  enabled: false
+  replicas: 0
+  config:
+    name: lidarr-config
+    capacity: 5Go
+  downloads:
+    name: lidarr-downloads
+    capacity: 100Go
+
+radarr:
+  enabled: true
+  replicas: 1
+  config:
+    name: radarr-config
+    capacity: 5Go
+  downloads:
+    name: radarr-downloads
+    capacity: 100Go

@@ -1,0 +1,31 @@
+{{- if .Values.enabled }}
+  {{- range $volume := .Values.volumes }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: "{{ $.Release.Namespace }}"
+  name: "{{ $volume.name }}-pv"
+spec:
+  storageClassName: local-path
+  capacity:
+    storage: {{ $volume.capacity }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "~/data/{{ $.Release.Namespace }}/{{ $volume.name }}"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: "{{ $.Release.Namespace }}"
+  name: "{{ $volume.name }}-pvc"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeName: "{{ $volume.name }}-pv"
+  resources:
+    requests:
+      storage: {{ $volume.capacity }}
+{{- end }}
+{{- end }}
