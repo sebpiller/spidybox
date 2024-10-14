@@ -3,11 +3,10 @@ kind: Ingress
 metadata:
   namespace: "{{ $.Release.Namespace }}"
   name: "{{ $.Release.Namespace }}-ingress"
-  annotations:
-    kubernetes.io/ingress.class: "traefik"
 spec:
+  ingressClassName: "traefik"
   rules:
-    - host: {{ $.Values.global.host }}
+    - host: "{{ $.Values.global.host }}"
       http:
         paths:
           {{ range $v := .Values }}

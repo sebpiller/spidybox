@@ -6,14 +6,12 @@ global:
   defaultMaxCpu: &defaultMaxCpu "500m"
 
   nfsVolume:
-    name: "nfs"
     enabled: true
     path: "/volume1/medias"
     server: "192.168.1.2"
     capacity: 1Gi
-    readOnly: false
 
-# Open VPN client to use
+# openvpn Activate openvpn client for sensitive services
 openvpn:
   name: "openvpn"
   enabled: true
@@ -64,7 +62,7 @@ transmission:
   enabled: true
   image: linuxserver/transmission
   version: latest
-  replicas: 1
+  replicas: *defaultReplica
   resources:
     limits:
       memory: *defaultMaxMemory
@@ -89,7 +87,7 @@ prowlarr:
   enabled: true
   image: linuxserver/prowlarr
   version: latest
-  replicas: 1
+  replicas: *defaultReplica
   resources:
     limits:
       memory: 1Gi
@@ -110,7 +108,7 @@ sonarr:
   enabled: true
   image: linuxserver/sonarr
   version: latest
-  replicas: 1
+  replicas: *defaultReplica
   resources:
     limits:
       memory: *defaultMaxMemory
@@ -125,11 +123,11 @@ sonarr:
       capacity: 1Gi
     - name: downloads
       capacity: 1Gi
-#    - name: tvshows
-#      capacity: 1Gi
-#      claimName: nfs-pvc
-#      accessMode: ReadWriteMany
-#      subPath: "/TV Shows"
+    - name: tvshows
+      capacity: 1Gi
+      accessMode: "ReadWriteMany"
+      storageClassName: "nfs-client"
+      subPath: "videos/TV Shows/"
 
 
 lidarr:
@@ -137,7 +135,7 @@ lidarr:
   enabled: true
   image: linuxserver/lidarr
   version: latest
-  replicas: 1
+  replicas: *defaultReplica
   resources:
     limits:
       memory: *defaultMaxMemory
@@ -152,13 +150,18 @@ lidarr:
       capacity: 1Gi
     - name: downloads
       capacity: 1Gi
+    - name: music
+      capacity: 1Gi
+      accessMode: "ReadWriteMany"
+      storageClassName: "nfs-client"
+      subPath: "music/"
 
 radarr:
   name: "radarr"
   enabled: true
   image: linuxserver/radarr
   version: latest
-  replicas: 1
+  replicas: *defaultReplica
   resources:
     limits:
       memory: *defaultMaxMemory
@@ -173,3 +176,8 @@ radarr:
       capacity: 1Gi
     - name: downloads
       capacity: 1Gi
+    - name: movies
+      capacity: 1Gi
+      storageClassName: "nfs-client"
+      accessMode: "ReadWriteMany"
+      subPath: "videos/Films/"
