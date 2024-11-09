@@ -1,0 +1,45 @@
+{{- range $.Values.volumes }}
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  namespace: {{ $.Release.Namespace }}
+  name: {{ .name }}
+#  labels:
+#    type: local
+spec:
+  claimRef:
+    namespace: {{ $.Release.Namespace }}
+    name: {{ .createPvc }}
+  storageClassName: nfs
+  capacity:
+    storage: "{{ .size | default "1Gi" }}"
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: {{ .path }}
+    server: {{ .server }}
+    readOnly: false
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: {{ $.Release.Namespace }}
+  name: {{ .createPvc }}
+spec:
+  storageClassName: nfs
+  volumeName: {{ .name }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: "{{ .size | default "1Gi" }}"
+---
+{{- end }}
+
+
+

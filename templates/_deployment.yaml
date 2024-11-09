@@ -117,8 +117,17 @@ spec:
           volumeMounts:
             {{- range $v := $.Values.volumes }}
             - name: "{{ $v.name }}"
-              subPath: "{{ $c.name }}"
+              {{- if not $v.shared | default false }}
+              subPath: "{{ $v.subPath | default ""}}{{ $c.name }}"
+              {{- else if $v.subPath }}
+              subPath: "{{ $v.subPath }}"
+              {{- end }}
               mountPath: "/{{ $v.name }}"
+            {{- end }}
+            {{ range $v := $c.mounts }}
+            - name: {{ $v.from }}
+              subPath: {{ $v.key }}
+              mountPath: {{ $v.path }}
             {{- end }}
         {{- end }}
       volumes:
@@ -126,6 +135,14 @@ spec:
         - name: "{{ $volume.name }}"
           persistentVolumeClaim:
             claimName: "{{ $volume.claimName }}"
+        {{- end }}
+        {{- range $volume := .Values.mounts }}
+        - name: "{{ $volume.from }}"
+          secret:
+            secretName: "{{ $volume.from }}"
+            items:
+              - key: "{{ $volume.key }}"
+                path: "{{ $volume.path }}"
         {{- end }}
 {{/*        {{- range $s := .Values.secrets }}*/}}
 {{/*        - name: "{{ $s.name }}"*/}}

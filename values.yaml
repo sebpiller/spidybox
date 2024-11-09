@@ -88,7 +88,26 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
-volumes: []
+volumes:
+  - name: spidybox-configs-pv
+    createPvc: spidybox-configs-pvc
+    type: nfs
+    server: 192.168.1.4
+    path: /data/nfs/spidybox/configs/
+    size: "50Gi"
+  - name: spidybox-downloads-pv
+    createPvc: spidybox-downloads-pvc
+    type: nfs
+    server: 192.168.1.4
+    path: /data/nfs/spidybox/downloads/
+    size: "200Gi"
+  - name: medias-pv
+    createPvc: medias-pvc
+    type: nfs
+    server: 192.168.1.4
+    path: /data/nfs/medias/
+    size: "2Ti"
+
 # - name: foo
 #   secret:
 #     secretName: mysecret
@@ -110,7 +129,7 @@ affinity: {}
 
 
 seedbox:
-  enabled: true
+  enabled: false
   name: seedbox
   description: "Seedbox applications for spidybox"
   activateDebugContainer: true
@@ -126,15 +145,11 @@ seedbox:
     - name: "downloads"
       claimName: "spidybox-downloads-pvc"
 
-#  secrets:
-#    - name: "vpn-config"
-#      content:
-#        client.ovpn: |-
-#          hello: pouet
-#    - name: "vpn-auth"
-#      content:
-#        auth.txt: |-
-#          hello: pouet
+  secrets:
+    - name: "vpn_config"
+      value: "client.ovpn: dmFsdWUtMg0KDQo="
+    - name: "vpn_auth"
+      value: "auth.txt: dmFsdWUtMg0KDQo="
 
   containers:
     - name: "transmission"
@@ -149,32 +164,34 @@ seedbox:
         - name: "transmission"
           number: 9091
           expose: true
-#
-#    - name: openvpn
-#      image:
-#        repository: "dperson/openvpn-client"
-#        tag: "latest"
-#      resources:
-#        limits:
-#          cpu: "1000m"
-#          memory: "100Mi"
-#      stdin: true
-#      tty: true
-#      command:
-#        - "/bin/sh"
-#        - "-c"
-#      args:
-#        - "openvpn --config 'vpn/client.ovpn' --auth-user-pass 'vpn/auth.txt' --script-security 3"
-#      secrets:
-#        - name: "vpn-config"
-#          file: "client.ovpn"
-#        - name: "vpn-auth"
-#          file: "auth.txt"
-#      securityContext:
-#        privileged: true
-#        capabilities:
-#          add:
-#            - NET_ADMIN
+
+    - name: openvpn
+      image:
+        repository: "dperson/openvpn-client"
+        tag: "latest"
+      resources:
+        limits:
+          cpu: "1000m"
+          memory: "100Mi"
+      stdin: true
+      tty: true
+      command:
+        - "/bin/sh"
+        - "-c"
+      args:
+        - "openvpn --config 'vpn/client.ovpn' --auth-user-pass 'vpn/auth.txt' --script-security 3"
+      mounts:
+        - from: seedbox-sec
+          key: client.ovpn
+          path: /vpn/client.ovpn
+        - from: seedbox-sec
+          key: auth.txt
+          path: /vpn/auth.txt
+      securityContext:
+        privileged: true
+        capabilities:
+          add:
+            - NET_ADMIN
 
 frontend:
   enabled: true
@@ -190,10 +207,14 @@ frontend:
   volumes:
     - name: "config"
       claimName: "spidybox-configs-pvc"
+      shared: false
     - name: "downloads"
       claimName: "spidybox-downloads-pvc"
+      shared: true
     - name: "videos"
-      claimName: "medias-videos-pvc"
+      claimName: "medias-pvc"
+      subPath: "videos"
+      shared: true
 
   containers:
     - name: "prowlarr"
@@ -202,11 +223,12 @@ frontend:
         tag: "latest"
       resources:
         limits:
-          cpu: "500m"
-          memory: "500Mi"
+          cpu: "400m"
+          memory: "600Mi"
       ports:
         - name: "prowlarr"
           number: 9696
+          nodePort: 30096
           expose: true
 
     - name: "radarr"
@@ -216,10 +238,11 @@ frontend:
       resources:
         limits:
           cpu: "500m"
-          memory: "500Mi"
+          memory: "600Mi"
       ports:
         - name: "radarr"
           number: 7878
+          nodePort: 30078
           expose: true
 
     - name: "sonarr"
@@ -229,10 +252,11 @@ frontend:
       resources:
         limits:
           cpu: "500m"
-          memory: "500Mi"
+          memory: "600Mi"
       ports:
         - name: "sonarr"
           number: 8989
+          nodePort: 30089
           expose: true
 
     - name: "lidarr"
@@ -242,8 +266,38 @@ frontend:
       resources:
         limits:
           cpu: "500m"
-          memory: "500Mi"
+          memory: "600Mi"
       ports:
         - name: "lidarr"
           number: 8686
+          nodePort: 30086
+          expose: true
+
+    - name: "transmission"
+      image:
+        repository: "linuxserver/transmission"
+        tag: "latest"
+      resources:
+        limits:
+          cpu: "2000m"
+          memory: "1000Mi"
+      livenessProbe:
+        httpGet:
+          path: /transmission/web
+          port: 9091
+        initialDelaySeconds: 30
+        periodSeconds: 60
+        failureThreshold: 5
+      readinessProbe:
+        httpGet:
+          path: /transmission/web
+          port: 9091
+        initialDelaySeconds: 30
+        periodSeconds: 60
+        failureThreshold: 5
+
+      ports:
+        - name: "transmission"
+          number: 9091
+          nodePort: 30091
           expose: true

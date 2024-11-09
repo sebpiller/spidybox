@@ -8,7 +8,7 @@ metadata:
   labels:
     {{- include "spidybox.labels" . | nindent 4 }}
 spec:
-  type: "{{ .Values.serviceType | default "ClusterIP"}}"
+  type: "{{ .Values.serviceType | default "NodePort" }}"
   ports:
     {{- range $c := .Values.containers }}
     {{- range $p := $c.ports }}
