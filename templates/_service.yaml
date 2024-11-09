@@ -1,0 +1,26 @@
+{{- define "service" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.name }}-svc"
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    {{- include "spidybox.labels" . | nindent 4 }}
+spec:
+  type: "{{ .Values.serviceType | default "ClusterIP"}}"
+  ports:
+    {{- range $c := .Values.containers }}
+    {{- range $p := $c.ports }}
+    -  name: "{{ $p.name }}"
+       port: {{ $p.number }}
+       targetPort: {{ $p.number }}
+       {{ if $p.nodePort }}
+       nodePort: {{ $p.nodePort }}
+       {{ end }}
+       protocol: "{{ $p.protocol | default "TCP" }}"
+    {{- end }}
+    {{- end }}
+  selector:
+    app: "{{ .Values.name }}"
+  {{- end }}

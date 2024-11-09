@@ -1,0 +1,6 @@
+{{- if .Values.enabled }}
+{{ include "secret" . }}
+{{ include "configmap" . }}
+{{ include "deployment" . }}
+{{ include "service" . }}
+{{- end }}

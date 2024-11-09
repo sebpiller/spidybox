@@ -1,0 +1,12 @@
+{{- define "configmap" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.name }}-cm"
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    {{- include "spidybox.labels" . | nindent 4 }}
+data:
+
+{{- end }}

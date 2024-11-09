@@ -1,0 +1,151 @@
+{{ define "deployment" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{- include "spidybox.name" . }}"
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    {{- include "spidybox.labels" . | nindent 4 }}
+spec:
+  {{- if or (not .Values.autoscaling) (not .Values.autoscaling.enabled) }}
+  replicas: {{ .Values.replicaCount | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "spidybox.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "spidybox.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "spidybox.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- range $c := .Values.initContainers }}
+        - name: "{{ $c.name }}"
+          securityContext: {{- toYaml $c.securityContext | nindent 12 }}
+          image: "{{ $c.image.repository }}:{{ $c.Values.image.tag }}"
+          imagePullPolicy: "{{ $c.image.pullPolicy | default "IfNotPresent" }}"
+          ports:
+          {{- range $p := $c.ports }}
+            - name: "{{ $p.name }}"
+              containerPort: {{ $p.port }}
+              protocol: "{{ $p.protocol | default "TCP" }}"
+          {{- end }}
+          livenessProbe:
+          {{- toYaml $c.livenessProbe | nindent 12 }}
+          readinessProbe:
+          {{- toYaml $c.readinessProbe | nindent 12 }}
+          resources:
+          {{- toYaml $c.resources | nindent 12 }}
+          {{- with $c.volumeMounts }}
+          volumeMounts:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+
+        {{- end }}
+      containers:
+        {{- if .Values.activateDebugContainer }}
+        - name: "debug-container"
+          image: "ubuntu:latest"
+          imagePullPolicy: "IfNotPresent"
+          command: [ "sleep", "36000" ]
+          resources:
+            limits:
+              memory: "300Mi"
+              cpu: "500m"
+          tty: true
+          volumeMounts:
+            {{- range $v := $.Values.volumes }}
+            - name: "{{ $v.name }}"
+              mountPath: "/{{ $v.name }}"
+            {{- end }}
+        {{- end }}
+        {{- range $c := .Values.containers }}
+        - name: "{{ $c.name }}"
+          securityContext:
+          {{- toYaml $c.securityContext | nindent 12 }}
+          image: "{{ $c.image.repository }}:{{ $c.image.tag | default "latest" }}"
+          imagePullPolicy: {{ $c.image.pullPolicy | default "IfNotPresent" }}
+
+          {{- if $c.stdin }}
+          stdin: true
+          {{- end }}
+
+          {{- if $c.tty }}
+          tty: true
+          {{- end }}
+
+          {{- if $c.command }}
+          command:
+            {{ range $c.command }}
+            - {{ . }}
+            {{ end }}
+          {{- end }}
+
+          {{- if $c.args }}
+          args:
+            {{ range $c.args }}
+            - {{ . }}
+            {{ end }}
+          {{- end }}
+          ports:
+            {{- range $p := $c.ports }}
+            - name: "{{ $p.name }}"
+              containerPort: {{ $p.number }}
+              protocol: "{{ $p.protocol | default "TCP" }}"
+            {{- end }}
+          livenessProbe:
+          {{- toYaml $c.livenessProbe | nindent 12 }}
+          readinessProbe:
+          {{- toYaml $c.readinessProbe | nindent 12 }}
+          resources:
+          {{- toYaml $c.resources | nindent 12 }}
+          volumeMounts:
+            {{- range $v := $.Values.volumes }}
+            - name: "{{ $v.name }}"
+              subPath: "{{ $c.name }}"
+              mountPath: "/{{ $v.name }}"
+            {{- end }}
+        {{- end }}
+      volumes:
+        {{- range $volume := $.Values.volumes }}
+        - name: "{{ $volume.name }}"
+          persistentVolumeClaim:
+            claimName: "{{ $volume.claimName }}"
+        {{- end }}
+{{/*        {{- range $s := .Values.secrets }}*/}}
+{{/*        - name: "{{ $s.name }}"*/}}
+{{/*          secret:*/}}
+{{/*            secretName: "{{ $s.name }}"*/}}
+{{/*            items:*/}}
+{{/*              - key: "{{ $s.file }}"*/}}
+{{/*                path: "{{ $s.file }}"*/}}
+{{/*        {{- end }}*/}}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

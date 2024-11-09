@@ -1,0 +1,4 @@
+{{- if .Values.enabled }}
+{{ include "deployment" . }}
+{{ include "service" . }}
+{{- end }}

@@ -1,0 +1,9 @@
+dependencies:
+- name: seedbox
+  repository: file://charts/seedbox
+  version: 1.0.0
+- name: frontend
+  repository: file://charts/frontend
+  version: 1.0.0
+digest: sha256:b1f626a543a59cda8962f13e08d81b43cbf20733deba3a15ee422dfcc6ad02e3
+generated: "2024-11-09T15:09:36.654628604+01:00"
